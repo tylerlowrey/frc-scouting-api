@@ -7,7 +7,6 @@ plugins {
     kotlin("jvm") version "1.7.20"
     kotlin("plugin.spring") version "1.7.20"
     kotlin("plugin.jpa") version "1.7.20"
-    application
 }
 
 group = "com.tylerlowrey"
@@ -28,10 +27,20 @@ dependencies {
     compileOnly("jakarta.platform:jakarta.jakartaee-api:9.1.0")
 
     implementation("org.springframework.boot:spring-boot-starter-web")
-    //implementation("org.springframework.boot:spring-boot-starter-security")
+    implementation("org.springframework.boot:spring-boot-starter-data-jpa")
+    implementation("org.springframework.security:spring-security-crypto")
+    implementation("org.jetbrains.kotlin:kotlin-reflect")
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    runtimeOnly("com.h2database:h2")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
-    testImplementation("org.springframework.boot:spring-boot-starter-test")
-}
+    testImplementation("org.springframework.boot:spring-boot-starter-test") {
+        exclude(module = "junit")
+        exclude(module = "mockito-core")
+    }
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testImplementation("com.ninja-squad:springmockk:3.1.1")}
 
 tasks.withType<KotlinCompile> {
     kotlinOptions {
@@ -45,24 +54,31 @@ tasks.getByName<Test>("test") {
 }
 
 tasks.register("runDev") {
-    dependsOn("jar")
-
+    dependsOn("clean")
+    dependsOn("bootJar").shouldRunAfter("clean")
     doLast {
-        val jarTask = tasks.getByName<BootJar>("bootJar")
-        val jarName = jarTask.archiveFile.get().asFile.name
-        exec {
-            val environmentVariables = loadEnvironmentVariablesFromFile(".env.development.local")
-            environmentVariables.map  {
-                environment(it.key, it.value)
-            }
-            println("$buildDir/libs/$jarName")
-            commandLine = listOf("java", "-jar", "$buildDir/libs/$jarName")
-        }
+        runWithEnvironment(".env.development.local")
     }
 }
 
-application {
-    mainClass.set("com.tylerlowrey.FrcScoutingApiApplicationKt")
+tasks.register("run") {
+    dependsOn("clean")
+    dependsOn("bootJar").shouldRunAfter("clean")
+    doLast {
+        runWithEnvironment(".env")
+    }
+}
+
+fun runWithEnvironment(dotEnvFileName: String) {
+    val jarTask = tasks.getByName<BootJar>("bootJar")
+    val jarName = jarTask.archiveFile.get().asFile.name
+    exec {
+        val environmentVariables = loadEnvironmentVariablesFromFile(dotEnvFileName)
+        environmentVariables.map  {
+            environment(it.key, it.value)
+        }
+        commandLine = listOf("java", "-jar", "$buildDir/libs/$jarName")
+    }
 }
 
 fun loadEnvironmentVariablesFromFile(fileName: String): MutableMap<String, String> {

@@ -46,6 +46,7 @@ bin/
 
 ### dotenv ###
 .env
+.env.*.local
 
 ### Emacs ###
 # -*- mode: gitignore; -*-
