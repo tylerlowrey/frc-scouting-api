@@ -18,7 +18,11 @@ data class ApplicationConfiguration(
     val appEnvironment: AppEnvironments = AppEnvironments.Production,
     // Default value of 2 weeks in milliseconds
     @Value("#{environment['REFRESH_TOKEN_EXPIRATION_IN_MILLIS'] ?: 1209600000}")
-    val refreshTokenExpirationLengthInMillis: Long = 1209600000
+    val refreshTokenExpirationLengthInMillis: Long = 1209600000,
+    @Value("#{environment['ACCESS_TOKEN_EXPIRATION_IN_MILLIS'] ?: 3600000}")
+    val accessTokenExpirationLengthInMillis: Long = 3600000,
+    @Value("#{environment['JWT_SIGNING_SECRET']}")
+    val jwtSigningSecret: String
 )
 
 enum class AppEnvironments {

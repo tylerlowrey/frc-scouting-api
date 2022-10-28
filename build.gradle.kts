@@ -31,6 +31,9 @@ dependencies {
     implementation("org.springframework.security:spring-security-crypto")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
+    implementation("com.auth0:java-jwt:4.2.1")
+    implementation("io.github.microutils:kotlin-logging-jvm:3.0.2")
+
     runtimeOnly("com.h2database:h2")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 

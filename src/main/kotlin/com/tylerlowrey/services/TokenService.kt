@@ -1,6 +1,7 @@
 package com.tylerlowrey.services
 
 import com.tylerlowrey.configuration.ApplicationConfiguration
+import com.tylerlowrey.models.AccessToken
 import com.tylerlowrey.models.RefreshToken
 import com.tylerlowrey.models.User
 import com.tylerlowrey.repositories.AccessTokenRepository
@@ -15,16 +16,16 @@ interface TokenService {
     fun invalidateRefreshToken(token: String)
     fun getUsersRefreshTokens(userId: Long): List<RefreshToken>
     fun createAccessTokenForUser(userId: Long): String
-    fun invalidateAccessToken(token: String)
-    fun getUsersAccessTokens(userId: Long)
+    fun invalidateAccessToken(tokenId: String)
+    fun getUsersAccessTokens(userId: Long): List<AccessToken>
 }
 
 @Component
 @Singleton
 class TokenServiceImpl(
-    val userRepository: UserRepository,
     val accessTokenRepository: AccessTokenRepository,
     val refreshTokenRepository: RefreshTokenRepository,
+    val jwtService: JWTService,
     val appConfig: ApplicationConfiguration
 ): TokenService {
 
@@ -48,15 +49,24 @@ class TokenServiceImpl(
     }
 
     override fun createAccessTokenForUser(userId: Long): String {
-        TODO("Not yet implemented")
+        val tokenId = UUID.randomUUID().toString()
+        accessTokenRepository.save(AccessToken(
+            tokenId,
+            valid = true,
+            expires = System.currentTimeMillis() + appConfig.accessTokenExpirationLengthInMillis,
+            user = User(
+                id = userId
+            )
+        ))
+        return jwtService.createJwt(tokenId)
     }
 
-    override fun invalidateAccessToken(token: String) {
-        TODO("Not yet implemented")
+    override fun invalidateAccessToken(tokenId: String) {
+        return accessTokenRepository.updateAccessTokenAsInvalid(tokenId)
     }
 
-    override fun getUsersAccessTokens(userId: Long) {
-        TODO("Not yet implemented")
+    override fun getUsersAccessTokens(userId: Long): List<AccessToken> {
+        return accessTokenRepository.getAccessTokensByUserId(userId)
     }
 
 }

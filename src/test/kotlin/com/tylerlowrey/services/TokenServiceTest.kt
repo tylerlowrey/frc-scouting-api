@@ -8,16 +8,16 @@ import io.mockk.*
 import org.junit.jupiter.api.Test
 
 class TokenServiceTest {
-    private val testAppConfig = ApplicationConfiguration()
+    private val testAppConfig = ApplicationConfiguration(jwtSigningSecret = "INSECURE_SECRET")
 
     @Test
     fun `createRefreshTokenForUser returns a valid refresh token`() {
         val mockedRefreshTokenRepo = mockk<RefreshTokenRepository>()
         every { mockedRefreshTokenRepo.save(any()) } returns RefreshToken(user = User())
         val tokenService = TokenServiceImpl(
-            userRepository = mockk(),
             accessTokenRepository = mockk(),
             refreshTokenRepository = mockedRefreshTokenRepo,
+            jwtService = mockk(),
             appConfig = testAppConfig
         )
         val refreshToken = tokenService.createRefreshTokenForUser(1)
@@ -37,9 +37,9 @@ class TokenServiceTest {
         val mockedRefreshTokenRepo = mockk<RefreshTokenRepository>()
         every { mockedRefreshTokenRepo.updatedRefreshTokenAsInvalid("testToken") } returns Unit
         val tokenService = TokenServiceImpl(
-            userRepository = mockk(),
             accessTokenRepository = mockk(),
             refreshTokenRepository = mockedRefreshTokenRepo,
+            jwtService = mockk(),
             appConfig = testAppConfig
         )
 
@@ -60,9 +60,9 @@ class TokenServiceTest {
             RefreshToken(user = User(id = 1L)),
         )
         val tokenService = TokenServiceImpl(
-            userRepository = mockk(),
             accessTokenRepository = mockk(),
             refreshTokenRepository = mockedRefreshTokenRepo,
+            jwtService = mockk(),
             appConfig = testAppConfig
         )
 
