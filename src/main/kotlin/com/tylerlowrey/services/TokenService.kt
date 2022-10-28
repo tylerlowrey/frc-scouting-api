@@ -6,7 +6,6 @@ import com.tylerlowrey.models.RefreshToken
 import com.tylerlowrey.models.User
 import com.tylerlowrey.repositories.AccessTokenRepository
 import com.tylerlowrey.repositories.RefreshTokenRepository
-import com.tylerlowrey.repositories.UserRepository
 import jakarta.inject.Singleton
 import org.springframework.stereotype.Component
 import java.util.*
@@ -50,15 +49,16 @@ class TokenServiceImpl(
 
     override fun createAccessTokenForUser(userId: Long): String {
         val tokenId = UUID.randomUUID().toString()
+        val expirationTime = System.currentTimeMillis() + appConfig.accessTokenExpirationLengthInMillis
         accessTokenRepository.save(AccessToken(
             tokenId,
             valid = true,
-            expires = System.currentTimeMillis() + appConfig.accessTokenExpirationLengthInMillis,
+            expires = expirationTime,
             user = User(
                 id = userId
             )
         ))
-        return jwtService.createJwt(tokenId)
+        return jwtService.createJwt(tokenId, expirationTime)
     }
 
     override fun invalidateAccessToken(tokenId: String) {
