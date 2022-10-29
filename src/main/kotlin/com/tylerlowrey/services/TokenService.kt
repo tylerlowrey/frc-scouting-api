@@ -62,7 +62,7 @@ class TokenServiceImpl(
     }
 
     override fun invalidateAccessToken(tokenId: String) {
-        return accessTokenRepository.updateAccessTokenAsInvalid(tokenId)
+        accessTokenRepository.updateAccessTokenAsInvalid(tokenId)
     }
 
     override fun getUsersAccessTokens(userId: Long): List<AccessToken> {
