@@ -29,7 +29,7 @@ class AppInitializationRunner(
             }
             logger.info { "===========================================" }
 
-            addDevelopmentTestData()
+            //addDevelopmentTestData()
         }
     }
 

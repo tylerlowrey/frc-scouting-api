@@ -23,26 +23,33 @@ repositories {
     mavenCentral()
 }
 
+extra["testcontainersVersion"] = "1.17.4"
+
 dependencies {
     compileOnly("jakarta.platform:jakarta.jakartaee-api:9.1.0")
 
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.security:spring-security-crypto")
+    implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     implementation("com.auth0:java-jwt:4.2.1")
     implementation("io.github.microutils:kotlin-logging-jvm:3.0.2")
+    implementation("org.flywaydb:flyway-core")
 
-    runtimeOnly("com.h2database:h2")
+    runtimeOnly("org.postgresql:postgresql")
+
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
+    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testImplementation("org.junit.jupiter:junit-jupiter-api")
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude(module = "junit")
         exclude(module = "mockito-core")
     }
-    testImplementation("org.junit.jupiter:junit-jupiter-api")
-    testRuntimeOnly("org.junit.jupiter:junit-jupiter-engine")
+    testImplementation("org.testcontainers:junit-jupiter")
+    testImplementation("org.testcontainers:postgresql")
     testImplementation("com.ninja-squad:springmockk:3.1.1")}
 
 tasks.withType<KotlinCompile> {
@@ -52,7 +59,17 @@ tasks.withType<KotlinCompile> {
     }
 }
 
+dependencyManagement {
+    imports {
+        mavenBom("org.testcontainers:testcontainers-bom:${property("testcontainersVersion")}")
+    }
+}
+
 tasks.getByName<Test>("test") {
+    val environmentVariables = loadEnvironmentVariablesFromFile(".env.test")
+    environmentVariables.map  {
+        environment(it.key, it.value)
+    }
     useJUnitPlatform()
 }
 
